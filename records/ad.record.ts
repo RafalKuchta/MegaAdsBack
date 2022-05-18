@@ -2,6 +2,7 @@ import {AdEntity, NewAdEntity, SimpleAdEntities} from "../types";
 import { pool } from "../utils/db";
 import {ValidationError} from "../utils/errors";
 import {FieldPacket} from "mysql2";
+import {v4 as uuid} from "uuid";
 
 type AdRecordResult = [AdEntity[], FieldPacket[]];
 
@@ -51,7 +52,6 @@ export class AdRecord implements AdEntity {
 
         return result.length === 0 ? null : new AdRecord(result[0]);
     }
-
     static async findAll(name: string): Promise<SimpleAdEntities[]> {
         const [result] = await pool.execute("SELECT * FROM `ads` WHERE `name` LIKE :search", {
             search: `%${name}%`,
@@ -61,6 +61,25 @@ export class AdRecord implements AdEntity {
             const {id, lat, lon} = result;
             return {id, lat, lon}
         });
+    }
+
+    async insert(): Promise<void> {
+        if(!this.id){
+            this.id = uuid();
+        } else {
+            throw new Error('Cannot insert semething thet is already inserted!');
+        }
+
+        await pool.execute("INSERT INTO `ads`(`id`, `name`, `description`, `price`, `url`, `lat`, `lon`) VALUES(:id, :name, :description, :price, :url, :lat, :lon)", {
+            id: this.id,
+            name: this.name,
+            description: this.description,
+            price: this.price,
+            url: this.url,
+            lat: this.lat,
+            lon: this.lon,
+        });
+
     }
 
 
