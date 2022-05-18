@@ -1,4 +1,4 @@
-import {AdEntity, NewAdEntity} from "../types";
+import {AdEntity, NewAdEntity, SimpleAdEntities} from "../types";
 import { pool } from "../utils/db";
 import {ValidationError} from "../utils/errors";
 import {FieldPacket} from "mysql2";
@@ -44,13 +44,23 @@ export class AdRecord implements AdEntity {
         this.lon = obj.lon;
 
     }
-
     static async getOne(id: string): Promise<AdRecord | null> {
-        const [result] = await pool.execute("SELECT * FROM `ads` WHERE id = :id", {
+        const [result] = await pool.execute("SELECT * FROM `ads` WHERE `id` = :id", {
             id,
         }) as AdRecordResult;
 
         return result.length === 0 ? null : new AdRecord(result[0]);
+    }
+
+    static async findAll(name: string): Promise<SimpleAdEntities[]> {
+        const [result] = await pool.execute("SELECT * FROM `ads` WHERE `name` LIKE :search", {
+            search: `%${name}%`,
+        }) as AdRecordResult;
+
+        return result.map(result => {
+            const {id, lat, lon} = result;
+            return {id, lat, lon}
+        });
     }
 
 
