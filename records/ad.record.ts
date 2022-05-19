@@ -43,8 +43,8 @@ export class AdRecord implements AdEntity {
         this.url = obj.url;
         this.lat = obj.lat;
         this.lon = obj.lon;
-
     }
+
     static async getOne(id: string): Promise<AdRecord | null> {
         const [result] = await pool.execute("SELECT * FROM `ads` WHERE `id` = :id", {
             id,
@@ -52,6 +52,7 @@ export class AdRecord implements AdEntity {
 
         return result.length === 0 ? null : new AdRecord(result[0]);
     }
+
     static async findAll(name: string): Promise<SimpleAdEntities[]> {
         const [result] = await pool.execute("SELECT * FROM `ads` WHERE `name` LIKE :search", {
             search: `%${name}%`,
